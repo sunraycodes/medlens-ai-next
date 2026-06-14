@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import type { AskResponse, ProcessResponse, RiskSeverity } from "@/types";
 import { isExtractionError } from "@/types";
 import PatientPanel from "@/components/PatientPanel";
+import Link from "next/link";
 
 const SEVERITY_STYLES: Record<RiskSeverity, string> = {
   high: "border-red-300 bg-red-50 text-red-800",
@@ -207,6 +208,9 @@ export default function DashboardPage() {
             <p className="text-sm text-gray-400 mt-0.5">Clinical summary across all uploaded reports</p>
           </div>
           <div className="flex gap-3">
+            <Link href="/history" className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-600 hover:border-[#0EA5E9] hover:text-[#0EA5E9] transition">
+            History
+            </Link>
             <PatientPanel
               conditions={analysis.patient_summary.conditions}
               medications={analysis.patient_summary.current_medications}
