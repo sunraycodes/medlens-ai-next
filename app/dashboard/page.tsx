@@ -109,7 +109,10 @@ function KnowledgeGraph({ nodes, edges }: { nodes: any[]; edges: any[] }) {
           const p = positions[n.id];
           if (!p) return null;
           const color = NODE_COLORS[n.type] || "#94A3B8";
-          const r = n.type === "patient" ? 30 : 22;
+          const r = n.type === "patient" ? 36 : 30;
+          const words = n.label.split(" ");
+          const line1 = words.slice(0, Math.ceil(words.length / 2)).join(" ");
+          const line2 = words.slice(Math.ceil(words.length / 2)).join(" ");
           return (
             <g
               key={n.id}
@@ -118,8 +121,15 @@ function KnowledgeGraph({ nodes, edges }: { nodes: any[]; edges: any[] }) {
               style={{ cursor: "grab" }}
             >
               <circle r={r} fill={color} fillOpacity="0.15" stroke={color} strokeWidth="2" />
-              <text textAnchor="middle" dy="0.35em" fontSize={n.type === "patient" ? "11" : "9"} fontWeight="600" fill={color}>
-                {n.label.length > 12 ? n.label.slice(0, 12) + "…" : n.label}
+              <text textAnchor="middle" fontSize={n.type === "patient" ? "11" : "9"} fontWeight="600" fill={color}>
+                {line2 ? (
+                  <>
+                    <tspan x="0" dy="-0.4em">{line1}</tspan>
+                    <tspan x="0" dy="1.2em">{line2}</tspan>
+                  </>
+                ) : (
+                  <tspan dy="0.35em">{line1}</tspan>
+                )}
               </text>
             </g>
           );
