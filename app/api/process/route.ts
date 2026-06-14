@@ -1,17 +1,3 @@
-// ============================================================
-// MedLens AI — POST /api/process
-// Direct port of @app.post("/process") from backend/main.py
-//
-// Pipeline:
-// 1. Clear and re-index the document store (RAG)
-// 2. Extract structured data from each uploaded report via LLM
-// 3. Sort valid reports chronologically
-// 4. Run cross-report AI analysis (summary, timeline, risk flags)
-// 5. Compute lab trends algorithmically (no AI)
-// 6. Build a patient knowledge graph (no AI)
-// 7. Generate a one-page doctor handoff summary via LLM
-// ============================================================
-
 import { NextRequest, NextResponse } from "next/server";
 import { callAI, callAIForJSON } from "@/lib/ai";
 import {
@@ -23,6 +9,8 @@ import { extractTextFromFile } from "@/lib/extractText";
 import { computeTrends, getValidReports, parseDateSafe } from "@/lib/trends";
 import { buildKnowledgeGraph } from "@/lib/knowledgeGraph";
 import { getDocumentStore } from "@/lib/documentStore";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 import type {
   Analysis,
   ExtractedReport,
@@ -60,13 +48,9 @@ export async function POST(request: NextRequest) {
         continue;
       }
 
-      // Index for RAG
       try {
         store.add(file.name, text);
-      } catch {
-        // mirror the Python try/except: indexing failure shouldn't
-        // block extraction
-      }
+      } catch {}
 
       const prompt = EXTRACTION_PROMPT.replace("<<report_text>>", text);
       const { parsed, raw } = await callAIForJSON<ExtractedReport>(prompt, 2);
@@ -115,6 +99,30 @@ export async function POST(request: NextRequest) {
       trends,
       knowledge_graph: knowledgeGraph,
     };
+
+    // Save to Supabase
+    try {
+      const cookieStore = await cookies();
+      const supabase = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+          cookies: {
+            getAll() { return cookieStore.getAll(); },
+            setAll() {},
+          },
+        }
+      );
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.from("analyses").insert({
+          user_id: user.id,
+          result: response,
+        });
+      }
+    } catch (e) {
+      console.error("Failed to save analysis:", e);
+    }
 
     return NextResponse.json(response);
   } catch (err) {

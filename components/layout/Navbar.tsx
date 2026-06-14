@@ -24,6 +24,9 @@ export function Navbar() {
         <Link href="/dashboard" className="hover:text-foreground">
           Dashboard
         </Link>
+        <Link href="/history" className="hover:text-foreground">
+          History
+        </Link>
         <button
           onClick={handleLogout}
           className="hover:text-foreground text-red-400 hover:text-red-600"
