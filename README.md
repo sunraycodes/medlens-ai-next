@@ -163,3 +163,4 @@ medlens-ai/
   in-memory Chroma client).
 - ReportLab PDF generation → `pdfkit` in `app/api/export-pdf/route.ts`, with
   equivalent header/bullet/paragraph formatting rules.
+ 
