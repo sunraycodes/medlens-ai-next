@@ -164,3 +164,4 @@ medlens-ai/
 - ReportLab PDF generation → `pdfkit` in `app/api/export-pdf/route.ts`, with
   equivalent header/bullet/paragraph formatting rules.
  
+ 
